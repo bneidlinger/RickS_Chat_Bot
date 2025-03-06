@@ -2,7 +2,7 @@
 
 A fully offline-capable AI chatbot that talks just like Rick from Rick and Morty, complete with a sci-fi Matrix-inspired UI. This project combines a PyTorch-based language model with custom personality processing to create an interactive Rick Sanchez experience.
 
-![Rick Chatbot Screenshot](screenshot.jpg)
+![Rick Chatbot Screenshot](screenshot.JPG)
 
 ## Features
 
