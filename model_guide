@@ -1,0 +1,141 @@
+# Offline Chatbot Models Guide
+
+This guide provides information about various models that can be used with this chatbot application. All models can be swapped by modifying the `MODEL_NAME` variable in the `download_model()` function.
+
+## Currently Supported Model Types
+
+- DialoGPT (Causal Language Models) - Original implementation
+- BlenderBot (Sequence-to-Sequence Models) - Recommended implementation
+- Other HuggingFace models with proper adjustments
+
+## Model Options
+
+### DialoGPT Family (Original)
+
+DialoGPT models are causal language models trained on Reddit conversations.
+
+#### DialoGPT-small
+- **Size**: 117M parameters
+- **Disk Space**: ~0.5 GB
+- **Memory Usage**: ~1 GB RAM
+- **Speed**: Fast
+- **Pros**: Smallest size, fastest inference
+- **Cons**: Lower quality responses, Reddit-style interactions
+- **Code**: `MODEL_NAME = "microsoft/DialoGPT-small"`
+
+#### DialoGPT-medium
+- **Size**: 345M parameters
+- **Disk Space**: ~1.3 GB
+- **Memory Usage**: ~2 GB RAM
+- **Speed**: Moderate
+- **Pros**: Balanced between size and quality
+- **Cons**: Still shows Reddit-style quirks
+- **Code**: `MODEL_NAME = "microsoft/DialoGPT-medium"`
+
+#### DialoGPT-large
+- **Size**: 762M parameters
+- **Disk Space**: ~3 GB
+- **Memory Usage**: ~4 GB RAM
+- **Speed**: Slower
+- **Pros**: Best quality in DialoGPT family
+- **Cons**: Larger size, still Reddit patterns
+- **Code**: `MODEL_NAME = "microsoft/DialoGPT-large"`
+
+### BlenderBot Family (Recommended)
+
+BlenderBot models are sequence-to-sequence models specifically designed for natural conversations.
+
+#### BlenderBot-400M-distill
+- **Size**: 400M parameters
+- **Disk Space**: ~1.6 GB
+- **Memory Usage**: ~2 GB RAM
+- **Speed**: Moderate
+- **Pros**: Balanced, natural conversations, less quirky than DialoGPT
+- **Cons**: Requires different tokenizer implementation
+- **Code**: `MODEL_NAME = "facebook/blenderbot-400M-distill"`
+- **Note**: Requires `BlenderbotTokenizer` and `AutoModelForSeq2SeqLM`
+
+#### BlenderBot-1B-distill
+- **Size**: 1.2B parameters
+- **Disk Space**: ~5 GB
+- **Memory Usage**: ~6 GB RAM
+- **Speed**: Slower
+- **Pros**: Higher quality responses, better context understanding
+- **Cons**: Larger size, slower inference
+- **Code**: `MODEL_NAME = "facebook/blenderbot-1B-distill"`
+- **Note**: Requires `BlenderbotTokenizer` and `AutoModelForSeq2SeqLM`
+
+### Other Options
+
+#### GPT-2 Based Models
+- **Size**: Varies (124M to 1.5B)
+- **Pros**: General purpose language model
+- **Cons**: Not specifically tuned for conversation
+- **Code**: `MODEL_NAME = "gpt2"` (or `"gpt2-medium"`, `"gpt2-large"`)
+- **Note**: Requires conversation formatting similar to DialoGPT
+
+#### BART Based Models
+- **Size**: 400M+ parameters
+- **Pros**: Good at summarization and conversation
+- **Cons**: Requires specific implementation
+- **Code**: `MODEL_NAME = "facebook/bart-large"`
+- **Note**: Requires `BartTokenizer` and `AutoModelForSeq2SeqLM`
+
+## Implementation Notes
+
+### For DialoGPT Models
+
+```python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
+```
+
+### For BlenderBot Models
+
+```python
+from transformers import AutoModelForSeq2SeqLM, BlenderbotTokenizer
+
+tokenizer = BlenderbotTokenizer.from_pretrained(MODEL_NAME)
+model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME)
+```
+
+### For GPT-2 Models
+
+```python
+from transformers import GPT2LMHeadModel, GPT2Tokenizer
+
+tokenizer = GPT2Tokenizer.from_pretrained(MODEL_NAME)
+model = GPT2LMHeadModel.from_pretrained(MODEL_NAME)
+```
+
+## Hardware Requirements
+
+- **Minimum**: 4GB RAM, dual-core CPU
+- **Recommended**: 8GB RAM, quad-core CPU
+- **For larger models**: 16GB RAM, modern CPU
+- **GPU Acceleration**: CUDA-compatible NVIDIA GPU with 4GB+ VRAM significantly improves performance
+
+## Model Selection Guide
+
+1. **Limited Hardware**: Use DialoGPT-small or BlenderBot-400M-distill
+2. **Balanced**: Use DialoGPT-medium or BlenderBot-400M-distill
+3. **Best Quality**: Use BlenderBot-1B-distill
+4. **Most Natural Conversations**: BlenderBot family
+
+## Customizing Generation Parameters
+
+Regardless of the model chosen, you can improve response quality by adjusting generation parameters:
+
+```python
+outputs = model.generate(
+    input_ids,
+    max_length=100,
+    temperature=0.7,       # Lower for more predictable responses
+    top_p=0.9,             # Nucleus sampling parameter
+    top_k=50,              # Restricts choices to top 50 tokens
+    num_beams=4,           # Beam search for better quality
+    no_repeat_ngram_size=3 # Prevents repetitive phrases
+)
+```
