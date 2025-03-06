@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rick Portal Error</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        
+        .error-container {
+            text-align: center;
+            border: 2px solid #0f0;
+            padding: 40px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            box-shadow: 0 0 20px #0f0;
+            max-width: 600px;
+        }
+        
+        h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+        
+        .error-message {
+            font-size: 24px;
+            margin-bottom: 30px;
+        }
+        
+        .rick-quote {
+            font-style: italic;
+            margin: 20px 0;
+            font-size: 18px;
+        }
+        
+        .home-button {
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        
+        .home-button:hover {
+            background: #00cc00;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        
+        .portal {
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, #00ff00 0%, rgba(0,255,0,0.4) 50%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            position: absolute;
+            z-index: -1;
+            filter: blur(10px);
+            animation: float 6s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="portal"></div>
+    
+    <div class="error-container">
+        <h1>Portal Malfunction!</h1>
+        <div class="error-message">{{ error }}</div>
+        
+        <div class="rick-quote">
+            "*burp* Great job, you broke the portal. This is why I don't let Morty touch my equipment. 
+            Let's get back to the garage before the dimensional police find us."
+        </div>
+        
+        <button onclick="window.location.href='/'" class="home-button">Return to Portal</button>
+    </div>
+</body>
+</html>

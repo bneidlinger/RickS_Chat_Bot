@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grok Chatbot</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
+        #chatbox { width: 50%; height: 400px; border: 1px solid #ccc; overflow-y: scroll; padding: 10px; margin: auto; }
+        #userInput { width: 50%; padding: 10px; }
+        button { padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Grok Chatbot</h1>
+    <div id="chatbox"></div>
+    <input type="text" id="userInput" placeholder="Type a message...">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        var socket = io();
+
+        function sendMessage() {
+            var userInput = document.getElementById("userInput").value;
+            if (userInput) {
+                displayMessage("You: " + userInput);
+                socket.emit("message", userInput);
+                document.getElementById("userInput").value = "";
+            }
+        }
+
+        socket.on("response", function(response) {
+            displayMessage("Grok: " + response);
+        });
+
+        function displayMessage(message) {
+            var chatbox = document.getElementById("chatbox");
+            var messageElement = document.createElement("p");
+            messageElement.textContent = message;
+            chatbox.appendChild(messageElement);
+            chatbox.scrollTop = chatbox.scrollHeight;
+        }
+    </script>
+</body>
+</html>

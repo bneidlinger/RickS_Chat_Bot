@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rick's Interdimensional Portal</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap">
+    <style>
+        @keyframes matrixGlitch {
+            0%, 100% { opacity: 1; transform: none; filter: none; }
+            50% { opacity: 0.9; transform: translateX(1px) translateY(-1px) skewX(2deg); filter: drop-shadow(0 0 5px #00ff00); }
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: black;
+            font-family: 'Orbitron', sans-serif;
+            color: #0f0;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .matrix-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .matrix-stream {
+            position: absolute;
+            top: -100px;
+            font-family: monospace;
+            font-size: 16px;
+            color: rgba(0, 255, 0, 0.7);
+            text-align: center;
+            white-space: nowrap;
+            opacity: 0.8;
+            animation: matrixRain linear infinite;
+            text-shadow: 0 0 5px #00ff00;
+        }
+        
+        .matrix-char {
+            display: block;
+            opacity: 0;
+            animation: fadeChar 0.5s linear forwards;
+        }
+        
+        .rick-char {
+            display: block;
+            color: #00ffff;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ffff;
+            opacity: 0;
+            animation: fadeRickChar 1s linear forwards;
+        }
+        
+        @keyframes matrixRain {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(100vh); }
+        }
+        
+        @keyframes fadeChar {
+            0% { opacity: 0; }
+            10% { opacity: 0.8; }
+            40% { opacity: 0.4; }
+            100% { opacity: 0.2; }
+        }
+        
+        @keyframes fadeRickChar {
+            0% { opacity: 0; transform: scale(0.5); }
+            20% { opacity: 1; transform: scale(1.2); }
+            40% { opacity: 0.9; transform: scale(1); }
+            90% { opacity: 0.7; }
+            100% { opacity: 0.5; }
+        }
+        
+        .chat-container {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(10, 10, 10, 0.95);
+            border: 2px solid #0f0;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px #0f0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .chat-header {
+            background: rgba(0, 0, 0, 0.9);
+            color: #0f0;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            animation: matrixGlitch 4s infinite;
+        }
+        
+        .chat-box {
+            height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+            border-bottom: 2px solid #0f0;
+            background: rgba(0, 0, 0, 0.8);
+            flex-grow: 1;
+        }
+        
+        .input-area {
+            padding: 10px;
+            background: rgba(10, 10, 10, 0.95);
+        }
+        
+        .form-control {
+            border-radius: 5px;
+            border: 2px solid #0f0;
+            background: black;
+            color: #0f0;
+            padding: 12px;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .btn-send {
+            background: #0f0;
+            color: black;
+            padding: 12px 20px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: bold;
+        }
+        
+        .btn-send:hover {
+            background: #00ff00;
+        }
+        
+        .btn-reset {
+            background: #666;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        
+        .btn-reset:hover {
+            background: #999;
+        }
+        
+        .message {
+            margin-bottom: 10px;
+            padding: 8px 15px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        
+        .user-message {
+            background: #0f0;
+            color: black;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .bot-message {
+            background: #222;
+            color: #0f0;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+            animation: matrixGlitch 6s infinite;
+        }
+        
+        .typing {
+            font-style: italic;
+            color: #888;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+        
+        /* Portal animation for the chat header */
+        .portal-glow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(0,255,0,0.4) 0%, rgba(0,255,0,0) 70%);
+            opacity: 0.5;
+            animation: portalPulse 4s infinite;
+        }
+        
+        @keyframes portalPulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+        }
+        
+        /* Custom scrollbar */
+        .chat-box::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        .chat-box::-webkit-scrollbar-track {
+            background: #111;
+        }
+        
+        .chat-box::-webkit-scrollbar-thumb {
+            background: #0f0;
+            border-radius: 5px;
+        }
+        
+        .chat-box::-webkit-scrollbar-thumb:hover {
+            background: #00cc00;
+        }
+        
+        /* Flashing effect when getting a new message */
+        @keyframes flashNew {
+            0% { box-shadow: 0 0 0px #0f0; }
+            50% { box-shadow: 0 0 30px #0f0; }
+            100% { box-shadow: 0 0 0px #0f0; }
+        }
+        
+        .flash-new {
+            animation: flashNew 1s;
+        }
+    </style>
+</head>
+<body>
+    <div class="matrix-background">
+        <!-- Will be created with JavaScript -->
+    </div>
+    
+    <div class="chat-container">
+        <div class="portal-glow"></div>
+        <div class="chat-header">
+            🧪 C-137 DIMENSIONAL COMM PORTAL - TALK TO RICK 🧪
+        </div>
+        <div class="chat-box" id="chat-box">
+            <div class="message bot-message"><strong>Rick:</strong> *burp* Hey there! W-w-what are you doing in my garage? Don't touch anything, especially not my portal gun. I'm busy with some real genius-level science here. Wubba lubba dub dub! What do you want? Make it quick, Morty's about to mess something up.</div>
+        </div>
+        <div class="input-area">
+            <div class="input-group">
+                <input type="text" id="user-input" class="form-control" placeholder="Ask something, but don't be stupid about it...">
+                <button id="send-btn" class="btn btn-send">Send</button>
+                <button id="reset-btn" class="btn btn-reset">Reset</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        var socket = io.connect(window.location.origin);
+        var chatBox = document.getElementById("chat-box");
+        var userInput = document.getElementById("user-input");
+        var sessionId = "user_" + Math.random().toString(36).substring(2, 15);
+        
+        // Create the matrix rain effect
+        function createMatrixRain() {
+            const matrixBackground = document.querySelector('.matrix-background');
+            
+            // Clear any existing content
+            matrixBackground.innerHTML = '';
+            
+            // Rick and Morty themed characters to include in the matrix
+            const rickMortyChars = [
+                '⚗️', '🧪', '🧬', '👽', '🛸', '🌀', '⚛️', '🔮', '💊', '🧠', 
+                '42', 'R', 'M', 'C-137', 'WUBBA', 'LUBBA', 'RICK', 'MORTY'
+            ];
+            
+            // Mix of Matrix-style characters and Rick & Morty references
+            const matrixChars = '10アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨーラリルレロワヲン・';
+            
+            // Create multiple vertical streams
+            const numColumns = Math.floor(window.innerWidth / 20); // Adjust for character width
+            
+            for (let i = 0; i < numColumns; i++) {
+                const stream = document.createElement('div');
+                stream.className = 'matrix-stream';
+                stream.style.left = (i * 20) + 'px'; // Position horizontally
+                stream.style.animationDelay = Math.random() * 2 + 's'; // Random delay
+                stream.style.animationDuration = (Math.random() * 10 + 10) + 's'; // Random speed
+                
+                // Create characters for this stream
+                const streamLength = Math.floor(Math.random() * 20) + 10;
+                let streamContent = '';
+                
+                for (let j = 0; j < streamLength; j++) {
+                    // Occasionally insert a Rick and Morty reference
+                    if (Math.random() < 0.1) {
+                        const rickChar = rickMortyChars[Math.floor(Math.random() * rickMortyChars.length)];
+                        streamContent += `<span class="rick-char">${rickChar}</span>`;
+                    } else {
+                        const char = matrixChars.charAt(Math.floor(Math.random() * matrixChars.length));
+                        streamContent += `<span class="matrix-char" style="animation-delay: ${Math.random() * 5}s;">${char}</span>`;
+                    }
+                }
+                
+                stream.innerHTML = streamContent;
+                matrixBackground.appendChild(stream);
+            }
+        }
+        
+        function sendMessage() {
+            var message = userInput.value.trim();
+            if (message === "") return;
+            var userMessage = `<div class='message user-message'><strong>You:</strong> ${message}</div>`;
+            $("#chat-box").append(userMessage);
+            userInput.value = "";
+            chatBox.scrollTop = chatBox.scrollHeight;
+            socket.emit("message", {message: message, session_id: sessionId});
+        }
+        
+        function resetConversation() {
+            // Clear the chat box except for the initial message
+            $("#chat-box").html('<div class="message bot-message"><strong>Rick:</strong> *burp* What now? I cleared my memory banks because your questions were getting too stupid. Start over, and try to be smarter this time!</div>');
+            
+            // Send clear history request to the server
+            $.ajax({
+                url: "/clear_history",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({session_id: sessionId}),
+                success: function(response) {
+                    console.log("Conversation history cleared");
+                }
+            });
+        }
+
+        $("#send-btn").click(sendMessage);
+        $("#reset-btn").click(resetConversation);
+        
+        $("#user-input").keypress(function(e) {
+            if (e.key === "Enter") sendMessage();
+        });
+
+        socket.on("response", function(data) {
+            if (data.type === "typing") {
+                $("#chat-box").append("<p id='typing-indicator' class='typing'>🧪 Rick is thinking...</p>");
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } else if (data.type === "message") {
+                $("#typing-indicator").remove();
+                var botMessage = `<div class='message bot-message'><strong>Rick:</strong> ${data.text}</div>`;
+                $("#chat-box").append(botMessage);
+                
+                // Add flash effect to the chat container
+                $(".chat-container").addClass("flash-new");
+                setTimeout(function() {
+                    $(".chat-container").removeClass("flash-new");
+                }, 1000);
+                
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        });
+        
+        // Run matrix effect on page load
+        createMatrixRain();
+        
+        // Update on window resize
+        window.addEventListener('resize', createMatrixRain);
+    </script>
+</body>
+</html>
